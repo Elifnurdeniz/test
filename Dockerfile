@@ -9,7 +9,7 @@ COPY . .
 
 # Upgrade pip and install dependencies directly
 RUN pip install --upgrade pip && \
-    pip install numpy pandas hyperopt scikit-learn mlflow
+    pip install --ignore-installed numpy pandas hyperopt scikit-learn mlflow
 
 # Set the command to run your training script
 CMD ["python", "train.py"]
