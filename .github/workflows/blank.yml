@@ -1,15 +1,16 @@
-name: CI/CD Pipeline for MLflow Project
+name: CI/CD Pipeline for MLflow Project on GKE
 
 on:
   push:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
       - name: Set up Python
@@ -17,39 +18,45 @@ jobs:
         with:
           python-version: '3.8'
 
-      - name: Install Python dependencies
+      - name: Install Python Dependencies
         run: |
-          python -m pip install --upgrade pip
-          pip install mlflow kubernetes docker
+          python -m pip install --upgrade pip setuptools wheel
+          pip install mlflow kubernetes docker hyperopt scikit-learn pandas numpy
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
+      # Authenticate to Google Cloud using your service account key.
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v1
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+          credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      - name: Build and Push Docker Image to Docker Hub
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/your-image-name:latest
-
+      # Set up gcloud with your project ID.
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
-          service_account_key: ${{ secrets.GCP_SA_KEY }}
-          export_default_credentials: true
 
-      - name: Get GKE cluster credentials
+      # Authenticate Docker so it can push images to Google Container Registry.
+      - name: Configure Docker for GCR
         run: |
-          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} --zone ${{ secrets.GKE_CLUSTER_ZONE }} --project ${{ secrets.GCP_PROJECT_ID }}
+          gcloud auth configure-docker
 
+      # Get GKE cluster credentials.
+      - name: Get GKE Cluster Credentials
+        run: |
+          gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} \
+            --zone ${{ secrets.GKE_CLUSTER_ZONE }} --project ${{ secrets.GCP_PROJECT_ID }}
+
+      # (Optional) Print current kubeconfig to verify your context.
+      - name: Show kubeconfig Contexts
+        run: |
+          kubectl config get-contexts
+
+      # Run the MLflow project using the Kubernetes backend.
       - name: Run MLflow Project on Kubernetes
         env:
+          # Set your tracking URI to your production MLflow server.
           MLFLOW_TRACKING_URI: "http://34.28.175.237:5000"
         run: |
-          # Make sure your k8s_backend_config.json's repository-uri is updated to:
-          # "${{ secrets.DOCKERHUB_USERNAME }}/your-image-name:latest"
+          # Ensure that your k8s_backend_config.json has the correct repository-uri,
+          # for example: "repository-uri": "drunken61/model-fine-tune"
           mlflow run . --backend kubernetes --backend-config k8s_backend_config.json
