@@ -37,10 +37,10 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      # 5. Install the GKE gcloud auth plugin (using version v0.4.0).
+      # 5. Install the GKE gcloud auth plugin (using version v0.6.0).
       - name: Install gke-gcloud-auth-plugin
         run: |
-          curl -LO "https://github.com/GoogleCloudPlatform/gke-gcloud-auth-plugin/releases/download/v0.4.0/gke-gcloud-auth-plugin_linux_amd64.tar.gz"
+          curl -LO "https://github.com/GoogleCloudPlatform/gke-gcloud-auth-plugin/releases/download/v0.6.0/gke-gcloud-auth-plugin_linux_amd64.tar.gz"
           tar -xzvf gke-gcloud-auth-plugin_linux_amd64.tar.gz
           sudo mv gke-gcloud-auth-plugin /usr/local/bin/
           chmod +x /usr/local/bin/gke-gcloud-auth-plugin
