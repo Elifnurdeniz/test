@@ -3,18 +3,16 @@ name: CI/CD Pipeline for MLflow Project on GKE
 on:
   push:
     branches:
-      - main
+      - main  # Adjust as needed
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout the repository.
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # 2. Set up Python and install dependencies.
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -25,46 +23,52 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install mlflow kubernetes docker hyperopt scikit-learn pandas numpy
 
-      # 3. Authenticate to Google Cloud using your service account.
+      # ✅ Authenticate to Google Cloud
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      # 4. Set up gcloud with your project ID.
+      # ✅ Set up gcloud (Must be before installing auth plugin)
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      # 5. Install the GKE gcloud auth plugin (using version v0.6.0).
+      # ✅ Install gke-gcloud-auth-plugin (After gcloud is set up)
       - name: Install gke-gcloud-auth-plugin
         run: |
-          curl -LO "https://github.com/GoogleCloudPlatform/gke-gcloud-auth-plugin/releases/download/v0.6.0/gke-gcloud-auth-plugin_linux_amd64.tar.gz"
-          tar -xzvf gke-gcloud-auth-plugin_linux_amd64.tar.gz
-          sudo mv gke-gcloud-auth-plugin /usr/local/bin/
-          chmod +x /usr/local/bin/gke-gcloud-auth-plugin
+          gcloud components install gke-gcloud-auth-plugin
+          gke-gcloud-auth-plugin --version
 
-      # 6. Docker Hub Login (for pushing images to Docker Hub).
-      - name: Docker Hub Login
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # ✅ Authenticate Docker for Google Container Registry (GCR) or DockerHub
+      - name: Configure Docker Authentication
+        run: |
+          gcloud auth configure-docker
 
-      # 7. Get GKE cluster credentials.
+      # ✅ Build and Push Docker Image
+      - name: Build and Push Docker Image
+        env:
+          IMAGE_NAME: "drunken61/model-fine-tune"
+          TAG: "latest"
+        run: |
+          docker build -t $IMAGE_NAME:$TAG .
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          docker push $IMAGE_NAME:$TAG
+
+      # ✅ Get GKE Cluster Credentials (AFTER `gke-gcloud-auth-plugin` is installed)
       - name: Get GKE Cluster Credentials
         run: |
           gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} \
             --zone ${{ secrets.GKE_CLUSTER_ZONE }} --project ${{ secrets.GCP_PROJECT_ID }}
 
-      # 8. (Optional) Show kubeconfig contexts to verify the correct cluster.
+      # ✅ Verify Kubeconfig Context
       - name: Show kubeconfig Contexts
         run: kubectl config get-contexts
 
-      # 9. Run the MLflow project using the Kubernetes backend.
-      - name: Run MLflow Project on Kubernetes
+      # ✅ Run MLflow Project on Kubernetes
+      - name: Run MLflow on Kubernetes
         env:
-          MLFLOW_TRACKING_URI: "http://34.28.175.237:5000"
+          MLFLOW_TRACKING_URI: "http://34.28.175.237:5000"  # Replace with your MLflow server URI
         run: |
-          mlflow run . --backend kubernetes --build-image --backend-config k8s_backend_config.json
+          mlflow run . --backend kubernetes --backend-config k8s_backend_config.json
