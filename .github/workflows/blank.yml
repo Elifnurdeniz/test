@@ -35,28 +35,27 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      # Authenticate Docker so it can push images to Google Container Registry.
-      - name: Configure Docker for GCR
-        run: |
-          gcloud auth configure-docker
+      # Log in to Docker Hub so that we can push the built image.
+      - name: Docker Hub Login
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # Get GKE cluster credentials.
+      # Retrieve GKE cluster credentials.
       - name: Get GKE Cluster Credentials
         run: |
           gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} \
             --zone ${{ secrets.GKE_CLUSTER_ZONE }} --project ${{ secrets.GCP_PROJECT_ID }}
 
-      # (Optional) Print current kubeconfig to verify your context.
+      # (Optional) Show kubeconfig contexts to verify the correct cluster.
       - name: Show kubeconfig Contexts
-        run: |
-          kubectl config get-contexts
+        run: kubectl config get-contexts
 
       # Run the MLflow project using the Kubernetes backend.
       - name: Run MLflow Project on Kubernetes
         env:
-          # Set your tracking URI to your production MLflow server.
           MLFLOW_TRACKING_URI: "http://34.28.175.237:5000"
         run: |
-          # Ensure that your k8s_backend_config.json has the correct repository-uri,
-          # for example: "repository-uri": "drunken61/model-fine-tune"
-          mlflow run . --backend kubernetes --backend-config k8s_backend_config.json
+          # Ensure that your k8s_backend_config.json's repository-uri is set to something like "drunken61/model-fine-tune"
+          mlflow run . --backend kubernetes --build-image --backend-config k8s_backend_config.json
