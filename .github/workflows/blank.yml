@@ -40,9 +40,9 @@ jobs:
 
       # 6. (Optional) Authenticate Docker to GCR if using GCR.
       # If you're pushing to Docker Hub, use the Docker Hub login step below.
-      #- name: Configure Docker for GCR
-      #  run: |
-      #    gcloud auth configure-docker
+      - name: Configure Docker for GCR
+        run: |
+          gcloud auth configure-docker
 
       # 7. Docker Hub Login (for pushing images to Docker Hub).
       - name: Docker Hub Login
