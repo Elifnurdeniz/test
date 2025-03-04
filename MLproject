@@ -1,7 +1,7 @@
 name: finetunemodel
 
 docker_env:
-  image: tensorflow/tensorflow:latest
+  image: drunken61/model-fine-tune:latest
 
 entry_points:
   main:
