@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: "{mlflow-project-name}-{run-id}"
+  namespace: default
+spec:
+  template:
+    spec:
+      containers:
+      - name: "{mlflow-project-name}"
+        image: "{docker-image-uri}"
+        command: ["{mlflow-entry-point-command}"]
+        env:
+          - name: MLFLOW_TRACKING_URI
+            value: "http://34.28.175.237:5000"
+      restartPolicy: Never

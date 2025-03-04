@@ -1,0 +1,6 @@
+{
+    "kube-context": "minikube",
+    "repository-uri": "drunken61/model-fine-tune",
+    "kube-job-template-path": "kubernetes_job_template.yaml"
+  }
+  

@@ -1,0 +1,8 @@
+name: finetunemodel
+
+docker_env:
+  image: tensorflow/tensorflow:latest
+
+entry_points:
+  main:
+    command: "python train.py"
