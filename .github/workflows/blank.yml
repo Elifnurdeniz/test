@@ -35,16 +35,16 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      # ✅ Install gke-gcloud-auth-plugin (After gcloud is set up)
+      # ✅ Install gke-gcloud-auth-plugin
       - name: Install gke-gcloud-auth-plugin
         run: |
           gcloud components install gke-gcloud-auth-plugin
           gke-gcloud-auth-plugin --version
 
-      # ✅ Authenticate Docker for Google Container Registry (GCR) or DockerHub
-      - name: Configure Docker Authentication
+      # ✅ Authenticate Docker (Fixing the username flag issue)
+      - name: Authenticate Docker
         run: |
-          gcloud auth configure-docker
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login --username "${{ secrets.DOCKER_USERNAME }}" --password-stdin
 
       # ✅ Build and Push Docker Image
       - name: Build and Push Docker Image
@@ -53,10 +53,9 @@ jobs:
           TAG: "latest"
         run: |
           docker build -t $IMAGE_NAME:$TAG .
-          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
           docker push $IMAGE_NAME:$TAG
 
-      # ✅ Get GKE Cluster Credentials (AFTER `gke-gcloud-auth-plugin` is installed)
+      # ✅ Get GKE Cluster Credentials
       - name: Get GKE Cluster Credentials
         run: |
           gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} \
