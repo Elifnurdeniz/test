@@ -10,11 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1. Checkout the repository.
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      # 2. Set up Python and install dependencies.
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -25,46 +23,42 @@ jobs:
           python -m pip install --upgrade pip setuptools wheel
           pip install mlflow kubernetes docker hyperopt scikit-learn pandas numpy
 
-      # 3. Authenticate to Google Cloud.
+      # Authenticate to Google Cloud using your service account key.
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v1
         with:
           credentials_json: '${{ secrets.GCP_SA_KEY }}'
 
-      # 4. Set up gcloud with your project ID.
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      # 5. Log in to Docker Hub for pushing the image.
+      # Install the GKE gcloud auth plugin.
+      - name: Install gke-gcloud-auth-plugin
+        run: |
+          curl -LO "https://github.com/GoogleCloudPlatform/gke-gcloud-auth-plugin/releases/download/v0.4.0/gke-gcloud-auth-plugin_linux_amd64.tar.gz"
+          tar -xzvf gke-gcloud-auth-plugin_linux_amd64.tar.gz
+          sudo mv gke-gcloud-auth-plugin /usr/local/bin/
+
+      # Docker Hub Login
       - name: Docker Hub Login
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 6. Get GKE cluster credentials; this generates a valid kubeconfig for Linux.
+      # Get GKE cluster credentials.
       - name: Get GKE Cluster Credentials
         run: |
           gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} \
             --zone ${{ secrets.GKE_CLUSTER_ZONE }} --project ${{ secrets.GCP_PROJECT_ID }}
 
-      # 7. Patch the kubeconfig to remove Windows-specific exec command suffixes.
-      - name: Patch kubeconfig for Linux
-        run: |
-          sed -i 's/gke-gcloud-auth-plugin\.exe/gke-gcloud-auth-plugin/g' ~/.kube/config
+      - name: Show kubeconfig Contexts
+        run: kubectl config get-contexts
 
-      # 8. Verify Kubernetes authentication.
-      - name: Verify kubectl Authentication
-        run: kubectl get nodes
-
-      # 9. Run the MLflow project on Kubernetes.
       - name: Run MLflow Project on Kubernetes
         env:
-          # Set your MLflow tracking server to your production endpoint.
           MLFLOW_TRACKING_URI: "http://34.28.175.237:5000"
         run: |
-          # Ensure your k8s_backend_config.json has the correct repository URI, e.g.:
-          # { "kube-context": "gke_your-context", "repository-uri": "drunken61/model-fine-tune", "kube-job-template-path": "kubernetes_job_template.yaml" }
           mlflow run . --backend kubernetes --build-image --backend-config k8s_backend_config.json
