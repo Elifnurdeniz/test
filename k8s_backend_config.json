@@ -1,5 +1,5 @@
 {
-    "kube-context": "minikube",
+    "kube-context": "gke_static-hangout-451313-e5_us-central1_mlflow-cluster-2",
     "repository-uri": "drunken61/model-fine-tune",
     "kube-job-template-path": "kubernetes_job_template.yaml"
   }
