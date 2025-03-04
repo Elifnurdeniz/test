@@ -37,10 +37,10 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
-      # 5. Install the GKE gcloud auth plugin.
+      # 5. Install the GKE gcloud auth plugin (using version v0.4.0).
       - name: Install gke-gcloud-auth-plugin
         run: |
-          curl -LO "https://github.com/GoogleCloudPlatform/gke-gcloud-auth-plugin/releases/latest/download/gke-gcloud-auth-plugin_linux_amd64.tar.gz"
+          curl -LO "https://github.com/GoogleCloudPlatform/gke-gcloud-auth-plugin/releases/download/v0.4.0/gke-gcloud-auth-plugin_linux_amd64.tar.gz"
           tar -xzvf gke-gcloud-auth-plugin_linux_amd64.tar.gz
           sudo mv gke-gcloud-auth-plugin /usr/local/bin/
           chmod +x /usr/local/bin/gke-gcloud-auth-plugin
@@ -65,8 +65,6 @@ jobs:
       # 9. Run the MLflow project using the Kubernetes backend.
       - name: Run MLflow Project on Kubernetes
         env:
-          # Set your MLflow tracking server endpoint.
           MLFLOW_TRACKING_URI: "http://34.28.175.237:5000"
         run: |
-          # Ensure that your k8s_backend_config.json's repository-uri is set to your Docker Hub repo (e.g., "drunken61/model-fine-tune")
           mlflow run . --backend kubernetes --build-image --backend-config k8s_backend_config.json
