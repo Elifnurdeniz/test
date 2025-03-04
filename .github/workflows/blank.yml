@@ -59,4 +59,4 @@ jobs:
         run: |
           # Ensure that your k8s_backend_config.json has the correct repository-uri,
           # for example: "repository-uri": "drunken61/model-fine-tune"
-          mlflow run . --backend kubernetes --build-image --backend-config k8s_backend_config.json
+          mlflow run . --backend kubernetes --backend-config k8s_backend_config.json
