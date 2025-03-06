@@ -7,8 +7,14 @@ WORKDIR /app
 # Copy the script into the container
 COPY train.py .
 
-# Install MLflow
-RUN pip install --no-cache-dir mlflow
+# Install Python dependencies
+RUN pip install --no-cache-dir mlflow pandas scikit-learn \
+    numpy \
+    python-dotenv \
+    google-auth \
+    google-auth-oauthlib \
+    google-auth-httplib2 \
+    google-cloud-storage
 
 # Run the script when the container starts
 CMD ["python", "train.py"]

@@ -15,5 +15,5 @@ spec:
           - name: MLFLOW_TRACKING_URI
             value: "http://34.28.175.237:5000"
           - name: MLFLOW_EXPERIMENT_NAME
-            value: "MLflow Connectivity Test"
+            value: "MLflow Tracking"
       restartPolicy: Never
