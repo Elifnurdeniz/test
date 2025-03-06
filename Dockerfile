@@ -10,11 +10,14 @@ COPY train.py .
 # Install Python dependencies
 RUN pip install --no-cache-dir mlflow pandas scikit-learn \
     numpy \
-    python-dotenv \
     google-auth \
     google-auth-oauthlib \
     google-auth-httplib2 \
-    google-cloud-storage
+    google-cloud-storage \
+    gcloud \
+    pymysql \
+    cryptography \
+    google
 
 # Run the script when the container starts
 CMD ["python", "train.py"]
