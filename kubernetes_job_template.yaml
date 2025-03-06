@@ -6,6 +6,7 @@ metadata:
 spec:
   template:
     spec:
+      serviceAccountName: mlflow-sa
       containers:
       - name: "{mlflow-project-name}"
         image: "{docker-image-uri}"
