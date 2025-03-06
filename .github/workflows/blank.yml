@@ -70,5 +70,6 @@ jobs:
       - name: Run MLflow Experiment on Kubernetes
         env:
           MLFLOW_TRACKING_URI: "http://34.28.175.237:5000"  # Replace with your MLflow server URI
+          MLFLOW_EXPERIMENT_NAME: "MLflow Connectivity Test"  # Replace with your MLflow experiment name
         run: |
           mlflow run . --backend kubernetes --backend-config k8s_backend_config.json

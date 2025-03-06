@@ -25,6 +25,8 @@ else:
 if mlflow.active_run():
     mlflow.end_run()
 
+mlflow.set_experiment(experiment_name)
+
 with mlflow.start_run() as run:
     print(f"New Run ID: {run.info.run_id}")
     mlflow.log_param("test_param", 1)
