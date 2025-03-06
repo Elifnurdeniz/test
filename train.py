@@ -15,7 +15,7 @@ if experiment:
 
     if not runs.empty:
         print("Existing Runs:")
-        print(runs[["run_id", "status", "start_time"]])  # Print only relevant columns
+        print(runs[["run_id", "status", "start_time"]])
     else:
         print("No previous runs found.")
 else:
