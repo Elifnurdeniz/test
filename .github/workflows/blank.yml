@@ -42,6 +42,13 @@ jobs:
         with:
           project_id: ${{ secrets.GCP_PROJECT_ID }}
 
+            # ✅ Install gke-gcloud-auth-plugin
+
+      - name: Install gke-gcloud-auth-plugin
+        run: |
+          gcloud components install gke-gcloud-auth-plugin
+          gke-gcloud-auth-plugin --version
+
       # ✅ Authenticate Docker (Fixing the username flag issue)
       - name: Authenticate Docker
         run: |
