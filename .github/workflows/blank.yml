@@ -73,6 +73,11 @@ jobs:
         run: |
           gcloud container clusters get-credentials ${{ secrets.GKE_CLUSTER_NAME }} --zone ${{ secrets.GKE_CLUSTER_ZONE }} --project ${{ secrets.GCP_PROJECT_ID }}
 
+      - name: Install Python and MLflow Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mlflow kubernetes docker
+
       - name: Run MLflow Experiment on Kubernetes
         env:
           MLFLOW_TRACKING_URI: "http://34.28.175.237:5000"  # Replace with your MLflow server URI
