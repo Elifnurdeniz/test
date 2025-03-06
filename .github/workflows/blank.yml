@@ -34,7 +34,7 @@ jobs:
 
       - name: Build and Push Docker Image
         env:
-          IMAGE_NAME: "us-central1-docker.pkg.dev/${{ secrets.GCP_PROJECT_ID }}/mlflow-artifacts/model-fine-tune"
+          IMAGE_NAME: "drunken61/model-fine-tune"
           TAG: "latest"
         run: |
           docker build -t $IMAGE_NAME:$TAG .
